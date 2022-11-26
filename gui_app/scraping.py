@@ -1,5 +1,4 @@
-import threading
-import sys
+
 import requests
 import math
 import re
@@ -11,6 +10,11 @@ from terraria.npcs import NPC
 
 
 def read_terraria_wiki():
+    """A generator function that scrapes the Terraria wiki web page for information on the individual NPCs' living
+    preferences, constructs an NPC object instance for each NPC using this data, and returns a list of NPCs.
+    On the first yield, the function yields the number of web pages that will be scraped, and then it yields after
+    each page, until it returns the list at the end."""
+
     # Result list
     npcs = []
 
@@ -31,14 +35,15 @@ def read_terraria_wiki():
     div_npcs = soup.find('div', attrs={'class': 'title'}, text='NPCs').parent
     if div_npcs is None:
         print('Failed to locate NPCs div.')
-        sys.exit(0)
+        return npcs
 
     # List the divs for individual NPCs
     individual_npc_divs = div_npcs.find_all(attrs={'class': 'i'})
     if individual_npc_divs is None:
         print('Cannot find divs for individual NPCs.')
-        sys.exit(0)
+        return npcs
 
+    # Yield the number of web pages that will be scraped (equal to the number of NPC divs)
     yield len(individual_npc_divs)
 
     # Iterate over the individual NPCs divs
@@ -103,7 +108,7 @@ def read_terraria_wiki():
                 print(f'Failed to parse {npc_name}. Moving on...')
 
             finally:
-                yield
+                yield  # Yield after each web page. Useful for denoting progress or cancelling the thread.
 
     return npcs
 

@@ -9,6 +9,28 @@ class NPC:
 		self.name = name
 		self.living_preferences = living_preferences
 
+		# Stats
+		self.favorite_biomes = None
+		self.favorite_neighbors = None
+
+		self.generate_stats()
+
+	def generate_stats(self):
+		if self.living_preferences is None:
+			self.favorite_biomes = []
+			self.favorite_neighbors = []
+			return
+
+		for liking, biome in self.living_preferences['Biome'].items():
+			if biome != 'N/A':
+				self.favorite_biomes = [s.strip() for s in biome.split(', ')]
+				break
+
+		for liking, neighbor in self.living_preferences['Neighbor'].items():
+			if neighbor != 'N/A':
+				self.favorite_neighbors = [s.strip() for s in neighbor.split(', ')]
+				break
+
 	def __repr__(self):
 		if self.living_preferences is not None:
 			preferences = self.living_preferences

@@ -41,6 +41,10 @@ class AppWindow(Panel):
         self.__scraper = None
         self.__npcs = None
 
+        # NPC information (parsed from self.__npcs after scraping)
+        self.favorite_biomes_count = None
+        self.favorite_neighbor_counts = None
+
         # Screens
         self.start_screen = StartScreen()
         self.progress_screen = LoadingScreen()
@@ -128,7 +132,47 @@ class AppWindow(Panel):
             self.__scraper = None  # Clear the reference to the scraper thread
             self.scraping_complete.emit() if success else self.scraping_failed.emit()  # Emit scraping status
 
+    def generate_stats(self):
+        """Generate some shared stats from the scraped npcs."""
+        favorite_biomes_counts = {}
+        favorite_neighbor_counts = {}
+
+        for npc in self.__npcs:
+            for favorite_biome in npc.favorite_biomes:
+                if favorite_biome not in favorite_biomes_counts.keys():
+                    favorite_biomes_counts[favorite_biome] = 0
+                favorite_biomes_counts[favorite_biome] += 1
+
+            for favorite_neighbor in npc.favorite_neighbors:
+                if favorite_neighbor not in favorite_neighbor_counts.keys():
+                    favorite_neighbor_counts[favorite_neighbor] = 0
+                favorite_neighbor_counts[favorite_neighbor] += 1
+
+        self.favorite_biomes_count = favorite_biomes_counts
+        self.favorite_neighbor_counts = favorite_neighbor_counts
+
+    def print_stats(self):
+        print('\nPrinting stats:')
+
+        print('\nDisplaying favorite biomes amount.\n')
+        for biome, amount in self.favorite_biomes_count.items():
+            print('{0:16}{1:16}'.format(biome, amount))
+
+        print('\nDisplaying favorite neighbors amount.\n')
+        for neighbor, amount in self.favorite_neighbor_counts.items():
+            print('{0:16}{1:16}'.format(neighbor, amount))
+
+        print('\nDisplaying favorite biomes and neighbors for each NPC.\n')
+        for npc in self.__npcs:
+            biomes_as_string = ", ".join(npc.favorite_biomes)
+            neighbors_as_string = ", ".join(npc.favorite_neighbors)
+            print('{0:40}{1:40}{2:40}'.format(npc.name, biomes_as_string, neighbors_as_string))
+
+        print('\nDone printing stats.\n')
+
     def _event_scraping_complete(self):
+        self.generate_stats()  # Generate some stats
+        self.print_stats()
         self.populate_tables_screen()  # Create tables from the scraped data
         self.show_screen(self.tables_screen)  # Show the tables screen
 

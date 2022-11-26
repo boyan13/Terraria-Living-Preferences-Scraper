@@ -95,7 +95,7 @@ def read_terraria_wiki():
                         # When the text of the cell contains multiple values, they come glued together
                         # without spaces, which is hard to read. Split the string by capital letter, and then
                         # join it back using comma + space.
-                        formatted = ", ".join(re.sub(r"([A-Z])", r" \1", formatted).split())
+                        formatted = re.sub(r"([a-z])([A-Z])", r'\1, \2', formatted)
                         # Replace the old text with the formatted one
                         preferences.loc[i, j] = formatted
 

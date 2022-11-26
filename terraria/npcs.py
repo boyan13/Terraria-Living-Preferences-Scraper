@@ -9,27 +9,49 @@ class NPC:
 		self.name = name
 		self.living_preferences = living_preferences
 
-		# Stats
-		self.favorite_biomes = None
-		self.favorite_neighbors = None
+	@property
+	def favorite_biomes(self):
+		if self.living_preferences is not None:
+			liking_scale = list(self.living_preferences.index)
+			for liking in liking_scale:
+				biome = self.living_preferences['Biome'][liking]
+				if biome != 'N/A':
+					favorite = [s.strip() for s in biome.split(', ')]
+					return favorite
+		return ['N/A']
 
-		self.generate_stats()
+	@property
+	def favorite_neighbors(self):
+		if self.living_preferences is not None:
+			liking_scale = list(self.living_preferences.index)
+			for liking in liking_scale:
+				neighbor = self.living_preferences['Neighbor'][liking]
+				if neighbor != 'N/A':
+					favorite = [s.strip() for s in neighbor.split(', ')]
+					return favorite
+		return ['N/A']
 
-	def generate_stats(self):
-		if self.living_preferences is None:
-			self.favorite_biomes = []
-			self.favorite_neighbors = []
-			return
+	@property
+	def least_favorite_biomes(self):
+		if self.living_preferences is not None:
+			disliking_scale = reversed(list(self.living_preferences.index))
+			for disliking in disliking_scale:
+				biome = self.living_preferences['Biome'][disliking]
+				if biome != 'N/A':
+					least_favorite = [s.strip() for s in biome.split(', ')]
+					return least_favorite
+		return ['N/A']
 
-		for liking, biome in self.living_preferences['Biome'].items():
-			if biome != 'N/A':
-				self.favorite_biomes = [s.strip() for s in biome.split(', ')]
-				break
-
-		for liking, neighbor in self.living_preferences['Neighbor'].items():
-			if neighbor != 'N/A':
-				self.favorite_neighbors = [s.strip() for s in neighbor.split(', ')]
-				break
+	@property
+	def least_favorite_neighbors(self):
+		if self.living_preferences is not None:
+			disliking_scale = reversed(list(self.living_preferences.index))
+			for disliking in disliking_scale:
+				neighbor = self.living_preferences['Neighbor'][disliking]
+				if neighbor != 'N/A':
+					least_favorite = [s.strip() for s in neighbor.split(', ')]
+					return least_favorite
+		return ['N/A']
 
 	def __repr__(self):
 		if self.living_preferences is not None:

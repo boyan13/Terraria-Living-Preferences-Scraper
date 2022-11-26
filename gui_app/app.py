@@ -42,8 +42,10 @@ class AppWindow(Panel):
         self.__npcs = None
 
         # NPC information (parsed from self.__npcs after scraping)
-        self.favorite_biomes_count = None
+        self.favorite_biomes_counts = None
         self.favorite_neighbor_counts = None
+        self.least_favorite_biomes_counts = None
+        self.least_favorite_neighbor_counts = None
 
         # Screens
         self.start_screen = StartScreen()
@@ -135,9 +137,12 @@ class AppWindow(Panel):
     def generate_stats(self):
         """Generate some shared stats from the scraped npcs."""
         favorite_biomes_counts = {}
+        least_favorite_biomes_counts = {}
         favorite_neighbor_counts = {}
+        least_favorite_neighbor_counts = {}
 
         for npc in self.__npcs:
+
             for favorite_biome in npc.favorite_biomes:
                 if favorite_biome not in favorite_biomes_counts.keys():
                     favorite_biomes_counts[favorite_biome] = 0
@@ -148,27 +153,41 @@ class AppWindow(Panel):
                     favorite_neighbor_counts[favorite_neighbor] = 0
                 favorite_neighbor_counts[favorite_neighbor] += 1
 
-        self.favorite_biomes_count = favorite_biomes_counts
+            for least_favorite_biome in npc.least_favorite_biomes:
+                if least_favorite_biome not in least_favorite_biomes_counts.keys():
+                    least_favorite_biomes_counts[least_favorite_biome] = 0
+                least_favorite_biomes_counts[least_favorite_biome] += 1
+
+            for least_favorite_neighbor in npc.least_favorite_neighbors:
+                if least_favorite_neighbor not in least_favorite_neighbor_counts.keys():
+                    least_favorite_neighbor_counts[least_favorite_neighbor] = 0
+                least_favorite_neighbor_counts[least_favorite_neighbor] += 1
+
+        self.favorite_biomes_counts = favorite_biomes_counts
+        self.least_favorite_biomes_counts = least_favorite_biomes_counts
         self.favorite_neighbor_counts = favorite_neighbor_counts
+        self.least_favorite_neighbor_counts = least_favorite_neighbor_counts
 
     def print_stats(self):
+        # For now, we'll be printing this, but it should eventually move somewhere in the gui.
+
         print('\nPrinting stats:')
 
         print('\nDisplaying favorite biomes amount.\n')
-        for biome, amount in self.favorite_biomes_count.items():
-            print('{0:16}{1:16}'.format(biome, amount))
+        for biome, amount in self.favorite_biomes_counts.items():
+            print('{0:30}{1:2}'.format(biome, amount))
 
         print('\nDisplaying favorite neighbors amount.\n')
         for neighbor, amount in self.favorite_neighbor_counts.items():
-            print('{0:16}{1:16}'.format(neighbor, amount))
+            print('{0:30}{1:2}'.format(neighbor, amount))
 
-        print('\nDisplaying favorite biomes and neighbors for each NPC.\n')
-        for npc in self.__npcs:
-            biomes_as_string = ", ".join(npc.favorite_biomes)
-            neighbors_as_string = ", ".join(npc.favorite_neighbors)
-            print('{0:40}{1:40}{2:40}'.format(npc.name, biomes_as_string, neighbors_as_string))
+        print('\nDisplaying least favorite biomes amount.\n')
+        for biome, amount in self.least_favorite_biomes_counts.items():
+            print('{0:30}{1:2}'.format(biome, amount))
 
-        print('\nDone printing stats.\n')
+        print('\nDisplaying least favorite neighbors amount.\n')
+        for neighbor, amount in self.least_favorite_neighbor_counts.items():
+            print('{0:30}{1:2}'.format(neighbor, amount))
 
     def _event_scraping_complete(self):
         self.generate_stats()  # Generate some stats

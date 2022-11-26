@@ -52,63 +52,61 @@ def read_terraria_wiki():
         npc_anchor = npc_div.find('a', href=True)
         npc_url = npc_anchor.get('href', None)
 
-        # If a valid link was found, proceed to that webpage and get the living preferences table
-        if npc_url is not None:
+        npc_name = 'Unknown'
 
-            npc_name = 'Unknown'
+        try:
 
-            try:
-                npc_page = requests.get(base_url + npc_url)
-                npc_soup = BeautifulSoup(npc_page.content, 'html.parser')
+            npc_page = requests.get(base_url + npc_url)  # Proceed to the npc's webpage
+            npc_soup = BeautifulSoup(npc_page.content, 'html.parser')  # Make soup
 
-                npc_name = npc_soup.find('h1', attrs={'id': 'firstHeading'}).text.strip()
-                if npc_name in NPC.npcs_with_no_living_preferences():
-                    print(f'Skipping {npc_name} (no living preferences).')
-                    npcs.append(NPC(name=npc_name, living_preferences=None))
-                    continue
+            npc_name = npc_soup.find('h1', attrs={'id': 'firstHeading'}).text.strip()  # Get the npc's name
+            if npc_name in NPC.npcs_with_no_living_preferences():  # Should we look for living preferences?
+                print(f'Skipping {npc_name} (no living preferences).')  # If not
+                npcs.append(NPC(name=npc_name, living_preferences=None))  # Build with dummy preferences
+                continue
 
-                # Use pandas read_html to parase the table into a DataFrame
-                preferences = pd.read_html(base_url + npc_url, attrs={'class': 'terraria living-preferences'})[0]
+            # Use pandas read_html to find and parase the living preferences html table into a DataFrame
+            preferences = pd.read_html(base_url + npc_url, attrs={'class': 'terraria living-preferences'})[0]
 
-                # Grab the first (unnamed) column, as it contains the row titles in it
-                first_col = preferences.loc[:, preferences.columns[0]]
+            # Grab the first (unnamed) column, as it contains the row titles in it
+            first_col = preferences.loc[:, preferences.columns[0]]
 
-                # Create a dict mapping that maps the current DataFrame indices to the semantic names
-                new_names = {k: v for k, v in zip(preferences.index, first_col)}
+            # Create a dict mapping that maps the current DataFrame indices to the semantic names
+            new_names = {k: v for k, v in zip(preferences.index, first_col)}
 
-                # Rename the index using the new names mapping
-                preferences.rename(mapper=new_names, inplace=True)
+            # Rename the index using the new names mapping
+            preferences.rename(mapper=new_names, inplace=True)
 
-                # Drop the unnamed column of containing the row names
-                del preferences[preferences.columns[0]]
+            # Drop the unnamed column of containing the row names
+            del preferences[preferences.columns[0]]
 
-                # Purge parsing artifacts and reformat
-                for i in preferences.index:
-                    for j in preferences.columns:
-                        item = preferences.loc[i, j]
+            # Purge parsing artifacts and reformat
+            for i in preferences.index:
+                for j in preferences.columns:
+                    item = preferences.loc[i, j]
 
-                        if type(item) is float and math.isnan(item):
-                            # Replace {float} nan with 'N/A'
-                            preferences.loc[i, j] = 'N/A'
+                    if type(item) is float and math.isnan(item):
+                        # Replace {float} nan with 'N/A'
+                        preferences.loc[i, j] = 'N/A'
 
-                        elif type(item) is str:
-                            # Remove the '\u200b' character from the string.
-                            formatted = item.replace('\u200b', '').strip()
-                            # When the text of the cell contains multiple values, they come glued together
-                            # without spaces, which is hard to read. Split the string by capital letter, and then
-                            # join it back using comma + space.
-                            formatted = ", ".join(re.sub(r"([A-Z])", r" \1", formatted).split())
-                            # Replace the old text with the formatted one
-                            preferences.loc[i, j] = formatted
+                    elif type(item) is str:
+                        # Remove the '\u200b' character from the string.
+                        formatted = item.replace('\u200b', '').strip()
+                        # When the text of the cell contains multiple values, they come glued together
+                        # without spaces, which is hard to read. Split the string by capital letter, and then
+                        # join it back using comma + space.
+                        formatted = ", ".join(re.sub(r"([A-Z])", r" \1", formatted).split())
+                        # Replace the old text with the formatted one
+                        preferences.loc[i, j] = formatted
 
-                npcs.append(NPC(name=npc_name, living_preferences=preferences))
-                print(f'Successfully parsed {npc_name}!')
+            npcs.append(NPC(name=npc_name, living_preferences=preferences))  # Instantiate and add NPC to list
+            print(f'Successfully parsed {npc_name}!')
 
-            except Exception as exc:
-                print(f'Failed to parse {npc_name}. Moving on...')
+        except Exception as exc:
+            print(f'Failed to parse {npc_name}. Moving on...')
 
-            finally:
-                yield  # Yield after each web page. Useful for denoting progress or cancelling the thread.
+        finally:
+            yield  # Yield after each web page. Useful for denoting progress or cancelling the thread.
 
     return npcs
 

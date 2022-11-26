@@ -40,11 +40,6 @@ class LoadingScreen(QWidget):
         self.progress_bar.setValue(self.progress_bar.value() + self.step)
 
 
-class ShuttingDownScreen(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-
-
 class TableScreen(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)

@@ -18,6 +18,6 @@ The gui is done using PyQt6, and I've refrained from applying my own styling to 
 
 ### How to run
 
-Run main.py without arguments, then proceed through the gui. Note that std-out is still going to the terminal.
+Install the required packages from requirements.txt and run main.py without arguments. Once the gui loads, click start to begin the scraping. Note that std-out is still going to the terminal.
 
 ---

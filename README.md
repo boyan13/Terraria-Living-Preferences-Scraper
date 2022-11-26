@@ -1,5 +1,7 @@
 # Terraria Living Preferences Scraper
 
+A project made for fun.
+
 ---
 
 ![Preview Image](preview.png)
